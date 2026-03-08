@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel", "build"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vulnradar"
+version = "0.1a"
+description = "SDK Wrapper for VulnRadar API"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+
+authors = [
+  {name = "FedxD", email = "official@fedxd.net"}
+]
+
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent"
+]
+dependencies = [
+    "aiohttp>=3.13.3",
+    "requests>=2.32.5",
+]
+
+[project.urls]
+Homepage = "https://github.com/KazimFedxD/VulnRadar"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[dependency-groups]
+dev = [
+    "numpy>=2.0.2",
+    "pandas>=2.3.1",
+    "pytest>=8.4.1",
+]
+
