@@ -10,3 +10,6 @@ wheels/
 .venv
 
 main.py
+AI/
+test.txt 
+test.py

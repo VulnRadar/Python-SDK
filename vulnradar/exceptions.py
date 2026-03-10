@@ -1,34 +1,87 @@
-class VulnException(Exception):
-    """Base exception for VulnRadar."""
-    def __init__(self, message, code=None):
-        self.message = message
-        self.code = code
-        super().__init__(self.message)
+from __future__ import annotations
 
-class InvalidAPIKeyException(VulnException):
-    """Raised when an invalid API key is provided."""
-    def __init__(self, message="Invalid API key provided."):
+from dataclasses import dataclass
+from datetime import datetime
+
+
+class VulnRadarError(Exception):
+    """Base exception for all VulnRadar SDK errors."""
+
+    def __init__(self, message: str, status_code: int | None = None) -> None:
+        super().__init__(message)
         self.message = message
-        self.code = 401
-        super().__init__(self.message, self.code)
-        
-class RateLimitedException(VulnException):
+        self.status_code = status_code
+
+
+class AuthenticationError(VulnRadarError):
+    """Raised when the API key is invalid or missing."""
+
+    def __init__(self, message: str = "Invalid or missing API key.") -> None:
+        super().__init__(message, status_code=401)
+
+
+class BadRequestError(VulnRadarError):
+    """Raised when the API rejects the request due to invalid parameters."""
+
+    def __init__(self, message: str = "Bad request. Check your parameters.") -> None:
+        super().__init__(message, status_code=400)
+
+
+class NotFoundError(VulnRadarError):
+    """Raised when the requested resource does not exist."""
+
+    def __init__(self, message: str = "Resource not found.") -> None:
+        super().__init__(message, status_code=404)
+
+
+class RateLimitError(VulnRadarError):
     """Raised when the API rate limit is exceeded."""
-    def __init__(self, message="API rate limit exceeded. Please try again later."):
-        self.message = message
-        self.code = 429
-        super().__init__(self.message, self.code)
 
-class InvalidRequestException(VulnException):
-    """Raised when an invalid request is made to the API."""
-    def __init__(self, message="Invalid request. Please check your parameters and try again."):
-        self.message = message
-        self.code = 400
-        super().__init__(self.message, self.code)
-        
-class ScanNotFoundException(VulnException):
-    """Raised when a requested scan is not found."""
-    def __init__(self, message="Scan not found. Please check the scan ID and try again."):
-        self.message = message
-        self.code = 404
-        super().__init__(self.message, self.code)
+    def __init__(
+        self,
+        message: str = "Rate limit exceeded. Please wait before retrying.",
+        rate_limit: "RateLimitInfo | None" = None,
+    ) -> None:
+        super().__init__(message, status_code=429)
+        self.rate_limit = rate_limit
+
+    @property
+    def limit(self) -> int | None:
+        return self.rate_limit.limit if self.rate_limit else None
+
+    @property
+    def used(self) -> int | None:
+        return self.rate_limit.used if self.rate_limit else None
+
+    @property
+    def remaining(self) -> int | None:
+        return self.rate_limit.remaining if self.rate_limit else None
+
+    @property
+    def resets_at(self) -> datetime | None:
+        return self.rate_limit.resets_at if self.rate_limit else None
+
+
+class ServerError(VulnRadarError):
+    """Raised when the API returns a 5xx server error."""
+
+    def __init__(self, message: str = "An internal server error occurred.", status_code: int = 500) -> None:
+        super().__init__(message, status_code=status_code)
+
+
+class InvalidURLError(VulnRadarError):
+    """Raised when a provided URL fails validation."""
+
+    def __init__(self, url: str) -> None:
+        super().__init__(f"Invalid URL: '{url}'. Must be a valid http:// or https:// URL.")
+        self.url = url
+
+
+@dataclass(frozen=True)
+class RateLimitInfo:
+    """Rate limit metadata exposed through RateLimitError."""
+
+    limit: int
+    used: int
+    remaining: int
+    resets_at: datetime | None

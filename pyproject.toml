@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "vulnradar"
-version = "0.1a"
-description = "SDK Wrapper for VulnRadar API"
+version = "0.1.0b"
+description = "Python SDK for the VulnRadar security scanning API"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
@@ -14,26 +14,37 @@ authors = [
   {name = "FedxD", email = "official@fedxd.net"}
 ]
 
+keywords = ["security", "vulnerability", "scanning", "sdk", "api"]
+
 classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Topic :: Security",
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "License :: OSI Approved :: MIT License",
-  "Operating System :: OS Independent"
+  "Operating System :: OS Independent",
+  "Typing :: Typed",
 ]
+
 dependencies = [
-    "aiohttp>=3.13.3",
     "requests>=2.32.5",
 ]
 
 [project.urls]
 Homepage = "https://github.com/KazimFedxD/VulnRadar"
+Repository = "https://github.com/KazimFedxD/VulnRadar"
+"Bug Tracker" = "https://github.com/KazimFedxD/VulnRadar/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
+include = ["vulnradar*"]
 
 [dependency-groups]
 dev = [
-    "numpy>=2.0.2",
-    "pandas>=2.3.1",
     "pytest>=8.4.1",
+    "pytest-cov>=6.0.0",
 ]
 
