@@ -13,3 +13,5 @@ main.py
 AI/
 test.txt 
 test.py
+.env
+uv.lock
