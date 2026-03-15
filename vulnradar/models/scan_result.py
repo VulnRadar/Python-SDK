@@ -17,7 +17,7 @@ class ScanResult:
     findings: list[Finding]
     summary: Summary
     response_headers: dict[str, str]
-    scan_history_id: str | None
+    scan_history_id: int | None
     notes: str | None
 
     @classmethod
@@ -32,6 +32,6 @@ class ScanResult:
             findings=[Finding.from_dict(f) for f in data.get("findings", [])],
             summary=Summary.from_dict(data.get("summary", {})),
             response_headers=data.get("responseHeaders", {}),
-            scan_history_id=data.get("scanHistoryId"),
+            scan_history_id=(int(data["scanHistoryId"]) if data.get("scanHistoryId") is not None else None),
             notes=data.get("notes"),
         )

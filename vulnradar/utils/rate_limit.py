@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Mapping
 
@@ -9,16 +8,7 @@ from ..constants import (
     RATE_LIMIT_REMAINING_HEADER,
     RATE_LIMIT_RESET_HEADER,
 )
-
-
-@dataclass(frozen=True)
-class RateLimitInfo:
-    """Rate limit metadata extracted from API response headers."""
-
-    limit: int
-    used: int
-    remaining: int
-    resets_at: datetime | None
+from ..exceptions import RateLimitInfo
 
 
 def parse_rate_limit_headers(headers: Mapping[str, str]) -> RateLimitInfo | None:
@@ -46,7 +36,10 @@ def parse_rate_limit_headers(headers: Mapping[str, str]) -> RateLimitInfo | None
         try:
             resets_at = datetime.fromtimestamp(int(raw_reset), tz=timezone.utc)
         except (ValueError, OSError):
-            pass
+            try:
+                resets_at = datetime.fromisoformat(raw_reset.replace("Z", "+00:00"))
+            except ValueError:
+                pass
 
     return RateLimitInfo(
         limit=limit,

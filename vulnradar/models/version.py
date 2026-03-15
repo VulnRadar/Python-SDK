@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
@@ -14,7 +15,7 @@ class VersionInfo:
     message: str | None
 
     @classmethod
-    def from_dict(cls, data: dict) -> "VersionInfo":
+    def from_dict(cls, data: dict[str, Any]) -> "VersionInfo":
         return cls(
             current=data.get("current", ""),
             latest=data.get("latest", ""),

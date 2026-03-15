@@ -34,6 +34,20 @@ class NotFoundError(VulnRadarError):
         super().__init__(message, status_code=404)
 
 
+class ForbiddenError(VulnRadarError):
+    """Raised when access to a resource is forbidden."""
+
+    def __init__(self, message: str = "You do not have permission to access this resource.") -> None:
+        super().__init__(message, status_code=403)
+
+
+class UnprocessableEntityError(VulnRadarError):
+    """Raised when a target is unreachable or request cannot be processed."""
+
+    def __init__(self, message: str = "The request could not be processed.") -> None:
+        super().__init__(message, status_code=422)
+
+
 class RateLimitError(VulnRadarError):
     """Raised when the API rate limit is exceeded."""
 
@@ -73,7 +87,10 @@ class InvalidURLError(VulnRadarError):
     """Raised when a provided URL fails validation."""
 
     def __init__(self, url: str) -> None:
-        super().__init__(f"Invalid URL: '{url}'. Must be a valid http:// or https:// URL.")
+        super().__init__(
+            f"Invalid URL: '{url}'. Must be a valid URL using one of: "
+            "http://, https://, ws://, wss://, ftp://, ftps://."
+        )
         self.url = url
 
 

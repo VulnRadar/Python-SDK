@@ -1,4 +1,4 @@
-BASE_URL: str = "https://vulnradar.dev/api/v1"
+BASE_URL: str = "https://vulnradar.dev/api/v2"
 VERSION_URL: str = "https://vulnradar.dev/api/version"
 
 DEFAULT_TIMEOUT: int = 30

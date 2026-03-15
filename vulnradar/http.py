@@ -2,23 +2,23 @@ from __future__ import annotations
 
 import time
 from typing import Any
+from urllib.parse import urlsplit
 
 import requests
 from requests import Response, Session
-from requests import PreparedRequest
 
 from .config import VulnRadarConfig
-from .constants import VERSION_URL
 from .exceptions import (
     AuthenticationError,
     BadRequestError,
+    ForbiddenError,
     NotFoundError,
     RateLimitError,
     ServerError,
+    UnprocessableEntityError,
     VulnRadarError,
 )
 from .utils.rate_limit import RateLimitInfo, parse_rate_limit_headers
-from json import dumps
 
 
 class HTTPClient:
@@ -44,13 +44,13 @@ class HTTPClient:
         Returns:
             Parsed JSON response as a dict.
         """
-        url = (self._config.base_url if versioned else VERSION_URL.rsplit("/api/version", 1)[0]) + path
+        url = (self._config.base_url if versioned else self._base_origin()) + path
         return self._request("GET", url)
 
     def get_unversioned(self, path: str) -> dict[str, Any]:
         """Perform a GET request against an unversioned endpoint.
 
-        The path is appended directly to the domain root (no /api/v1 prefix).
+        The path is appended directly to the domain root (no /api/v2 prefix).
 
         Args:
             path: Full path from domain root (e.g. '/api/version').
@@ -58,8 +58,7 @@ class HTTPClient:
         Returns:
             Parsed JSON response as a dict.
         """
-        base = self._config.base_url.split("/api/v1")[0]
-        return self._request("GET", base + path)
+        return self._request("GET", self._base_origin() + path)
 
     def post(self, path: str, json: dict[str, Any]) -> dict[str, Any]:
         """Perform an authenticated POST request.
@@ -73,6 +72,22 @@ class HTTPClient:
         """
         url = self._config.base_url + path
         return self._request("POST", url, json=json)
+
+    def delete(self, path: str) -> dict[str, Any]:
+        """Perform an authenticated DELETE request.
+
+        Args:
+            path: The API path (e.g. '/history/123').
+
+        Returns:
+            Parsed JSON response as a dict.
+        """
+        url = self._config.base_url + path
+        return self._request("DELETE", url)
+
+    def _base_origin(self) -> str:
+        parsed = urlsplit(self._config.base_url)
+        return f"{parsed.scheme}://{parsed.netloc}"
 
     def _request(
         self,
@@ -91,9 +106,7 @@ class HTTPClient:
                     timeout=self._config.timeout,
                 )
                 self._raise_for_status(response)
-                data = response.json()  # may raise if response is not JSON
-                print(f"HTTP {method} {url} succeeded on attempt {attempt + 1}\nResponse: {dumps(data, indent=2)}")
-                return data
+                return response.json()  # may raise if response is not JSON
             except RateLimitError:
                 raise
             except (AuthenticationError, BadRequestError, NotFoundError):
@@ -137,6 +150,10 @@ class HTTPClient:
             raise AuthenticationError(message)
         elif status == 404:
             raise NotFoundError(message)
+        elif status == 403:
+            raise ForbiddenError(message)
+        elif status == 422:
+            raise UnprocessableEntityError(message)
         elif status == 429:
             rate_limit = parse_rate_limit_headers(response.headers)
             rl_info = (

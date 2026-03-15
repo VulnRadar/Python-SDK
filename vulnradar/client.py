@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from .config import VulnRadarConfig
 from .constants import BASE_URL, DEFAULT_TIMEOUT, DEFAULT_RETRIES
 from .http import HTTPClient
@@ -64,11 +66,12 @@ class VulnRadar:
         """Access API metadata such as finding type definitions."""
         return self._metadata_service
 
-    def scan(self, url: str) -> ScanResult:
+    def scan(self, url: str, scanners: list[str] | None = None) -> ScanResult:
         """Run a security scan against a single URL.
 
         Args:
             url: The target URL to scan.
+            scanners: Optional list of scanner IDs to run. If omitted, all scanners run.
 
         Returns:
             A ScanResult containing findings, summary, and scan metadata.
@@ -78,7 +81,7 @@ class VulnRadar:
             AuthenticationError: If the API key is invalid.
             RateLimitError: If the rate limit is exceeded.
         """
-        return self._scan_service.scan(url)
+        return self._scan_service.scan(url, scanners=scanners)
 
     def scan_crawl(self, url: str, urls: list[str] | None = None) -> CrawlResult:
         """Run a deep crawl scan across multiple pages of a target.
@@ -109,5 +112,5 @@ class VulnRadar:
         Returns:
             A VersionInfo object with version strings and status fields.
         """
-        data = self._http.get_unversioned("/api/version")
+        data: dict[str, Any] = self._http.get_unversioned("/api/version")
         return VersionInfo.from_dict(data)

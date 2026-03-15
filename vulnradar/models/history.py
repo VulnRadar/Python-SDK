@@ -10,7 +10,7 @@ from .summary import Summary
 class HistoryScan:
     """A scan entry from the scan history list."""
 
-    id: str
+    id: int
     url: str
     summary: Summary
     findings_count: int
@@ -26,7 +26,7 @@ class HistoryScan:
         scanned_at = datetime.fromisoformat(raw_ts.replace("Z", "+00:00")) if raw_ts else datetime.utcnow()
 
         return cls(
-            id=data.get("id", ""),
+            id=int(data.get("id", 0)),
             url=data.get("url", ""),
             summary=Summary.from_dict(data.get("summary", {})),
             findings_count=int(data.get("findings_count", 0)),
@@ -48,4 +48,19 @@ class HistoryList:
     def from_dict(cls, data: dict) -> "HistoryList":
         return cls(
             scans=[HistoryScan.from_dict(s) for s in data.get("scans", [])],
+        )
+
+
+@dataclass
+class DeleteScanResult:
+    """Result for deleting a scan from history."""
+
+    success: bool
+    message: str
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "DeleteScanResult":
+        return cls(
+            success=bool(data.get("success", False)),
+            message=str(data.get("message", "")),
         )

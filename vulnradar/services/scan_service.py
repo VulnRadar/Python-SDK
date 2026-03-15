@@ -11,11 +11,12 @@ class ScanService:
     def __init__(self, http: HTTPClient) -> None:
         self._http = http
 
-    def scan(self, url: str) -> ScanResult:
+    def scan(self, url: str, scanners: list[str] | None = None) -> ScanResult:
         """Run a security scan against a single URL.
 
         Args:
-            url: The target URL to scan. Must be a valid http/https URL.
+            url: The target URL to scan. Must be a valid supported URL.
+            scanners: Optional list of scanner IDs to run. If omitted, all scanners run.
 
         Returns:
             A ScanResult containing findings, summary, and metadata.
@@ -26,5 +27,8 @@ class ScanService:
             RateLimitError: If the rate limit is exceeded.
         """
         validate_url(url)
-        data = self._http.post("/scan", {"url": url})
+        payload: dict[str, object] = {"url": url}
+        if scanners is not None:
+            payload["scanners"] = scanners
+        data = self._http.post("/scan", payload)
         return ScanResult.from_dict(data)

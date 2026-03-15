@@ -4,10 +4,12 @@ from .exceptions import (
     VulnRadarError,
     AuthenticationError,
     BadRequestError,
+    ForbiddenError,
     NotFoundError,
     RateLimitError,
     ServerError,
     InvalidURLError,
+    UnprocessableEntityError,
 )
 from .models import (
     Finding,
@@ -15,6 +17,7 @@ from .models import (
     ScanResult,
     HistoryScan,
     HistoryList,
+    DeleteScanResult,
     CrawlPage,
     CrawlInfo,
     CrawlResult,
@@ -24,22 +27,25 @@ from .models import (
     FindingTypesResult,
 )
 
-__version__ = "0.1.0"
+__version__ = "2.0.0b1"
 __all__ = [
     "VulnRadar",
     "Severity",
     "VulnRadarError",
     "AuthenticationError",
     "BadRequestError",
+    "ForbiddenError",
     "NotFoundError",
     "RateLimitError",
     "ServerError",
     "InvalidURLError",
+    "UnprocessableEntityError",
     "Finding",
     "Summary",
     "ScanResult",
     "HistoryScan",
     "HistoryList",
+    "DeleteScanResult",
     "CrawlPage",
     "CrawlInfo",
     "CrawlResult",

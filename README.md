@@ -62,7 +62,7 @@ client = VulnRadar(
     api_key="your-api-key",
     timeout=60,          # HTTP timeout in seconds (default: 30)
     retries=5,           # Retry attempts on server errors (default: 3)
-    base_url="https://vulnradar.dev/api/v1",  # Custom base URL (optional)
+    base_url="https://vulnradar.dev/api/v2",  # Custom base URL (optional)
 )
 ```
 
@@ -75,6 +75,9 @@ client = VulnRadar(
 ```python
 result = client.scan("https://example.com")
 
+# Optional: run only selected scanners.
+result = client.scan("https://example.com", scanners=["headers", "ssl"])
+
 print(result.url)
 print(result.scanned_at)
 print(result.duration)
@@ -86,6 +89,8 @@ for finding in result.findings:
     print(finding.remediation)
 ```
 
+Supported target protocols: `http://`, `https://`, `ws://`, `wss://`, `ftp://`, `ftps://`.
+
 **ScanResult fields:**
 
 | Field              | Type                  | Description                        |
@@ -96,7 +101,7 @@ for finding in result.findings:
 | `findings`         | `list[Finding]`       | List of security findings          |
 | `summary`          | `Summary`             | Aggregated finding counts          |
 | `response_headers` | `dict[str, str]`      | HTTP headers from the target       |
-| `scan_history_id`  | `str \| None`         | ID in scan history                 |
+| `scan_history_id`  | `int \| None`         | ID in scan history                 |
 | `notes`            | `str \| None`         | Optional scan notes                |
 
 ---
@@ -155,11 +160,19 @@ for scan in history.scans:
 ### Get a Specific Scan
 
 ```python
-result = client.history.get("scan-id-here")
+result = client.history.get(123)
 
 print(result.url)
 for finding in result.findings:
     print(finding.title, finding.severity)
+```
+
+### Delete a Scan
+
+```python
+deleted = client.history.delete(123)
+print(deleted.success)
+print(deleted.message)
 ```
 
 ---
@@ -203,10 +216,12 @@ from vulnradar import (
     VulnRadarError,
     AuthenticationError,
     BadRequestError,
+    ForbiddenError,
     NotFoundError,
     RateLimitError,
     ServerError,
     InvalidURLError,
+    UnprocessableEntityError,
 )
 
 client = VulnRadar(api_key="your-api-key")
@@ -234,7 +249,9 @@ except VulnRadarError as e:
 |---------------------|-------------|--------------------------------------|
 | `AuthenticationError` | 401       | Invalid or missing API key           |
 | `BadRequestError`   | 400         | Malformed request or invalid params  |
+| `ForbiddenError`    | 403         | Authenticated but not permitted      |
 | `NotFoundError`     | 404         | Requested resource does not exist    |
+| `UnprocessableEntityError` | 422  | Target is unreachable/not processable |
 | `RateLimitError`    | 429         | Rate limit exceeded                  |
 | `ServerError`       | 5xx         | API-side internal error              |
 | `InvalidURLError`   | —           | URL failed client-side validation    |
@@ -258,6 +275,8 @@ Headers parsed:
 - `X-RateLimit-Remaining`
 - `X-RateLimit-Reset`
 - `Retry-After`
+
+Default API key quota: `50 requests per 24 hours`.
 
 ---
 

@@ -11,9 +11,11 @@ _DOMAIN_RE = re.compile(
     r"\.)+[a-zA-Z]{2,}$"
 )
 
+_SUPPORTED_SCHEMES = ("http", "https", "ws", "wss", "ftp", "ftps")
+
 
 def validate_url(url: str) -> str:
-    """Validate that a URL is a well-formed http/https URL with a valid domain.
+    """Validate that a URL is a well-formed supported URL with a valid domain.
 
     Args:
         url: The URL string to validate.
@@ -29,7 +31,7 @@ def validate_url(url: str) -> str:
     except ValueError:
         raise InvalidURLError(url)
 
-    if parsed.scheme not in ("http", "https"):
+    if parsed.scheme not in _SUPPORTED_SCHEMES:
         raise InvalidURLError(url)
 
     host = parsed.hostname or ""
